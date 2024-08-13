@@ -41,9 +41,9 @@ int main() {
         int indice;
         int t = omp_get_num_threads();
         int N_Loc = N/t;
-        printf("\nCore:%d\n",omp_get_thread_num());
 
         for(int i=0;i<N_Loc;i++) {
+            printf("\nCore:%d\n",omp_get_thread_num());
             indice = i + N_Loc * omp_get_thread_num();
             c[indice] = a[indice] + b[indice];
         }
@@ -55,6 +55,5 @@ int main() {
     free(a);
     free(b);
     free(c);
-    
     return 0;
 }
