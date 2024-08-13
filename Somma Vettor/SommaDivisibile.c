@@ -43,7 +43,6 @@ int main() {
         int N_Loc = N/t;
 
         for(int i=0;i<N_Loc;i++) {
-            printf("\nCore:%d\n",omp_get_thread_num());
             indice = i + N_Loc * omp_get_thread_num();
             c[indice] = a[indice] + b[indice];
         }
@@ -55,5 +54,6 @@ int main() {
     free(a);
     free(b);
     free(c);
+    
     return 0;
 }
