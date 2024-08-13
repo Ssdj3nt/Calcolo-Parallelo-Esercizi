@@ -1,83 +1,60 @@
-//Somma 2 vettori caso dove N è divisibile per t
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <omp.h>
+#include <stdlib.h>
 
-void  stampaVettore(float*, int, char[]);
+void visualizzaArray(int *array, int size) {
+    for (int i=0; i<size;i++) {
+        printf("%d ",array[i]);
+    }
+}
 
-int main()
-{
-    int i, N, t, N_Loc, indice;
+int main() {
+    int num_procs = omp_get_num_procs();
+    int N;
 
-    float *a, *b, *c;
+    do {
+        printf("\nDefinisci N: ");
+        scanf("%d",&N);
+        if(N % num_procs != 0) {
+            printf("La divisione tra il numero dei sottoproblemi ed il numero dei core deve ritornare un intero.\n");
+        }
+    } while (N % num_procs != 0);
 
+    int *a = calloc(N,sizeof(int));
+    int *b = calloc(N,sizeof(int));
+    int *c = calloc(N,sizeof(int));
 
-    printf("Inserisci N \n");
-    scanf("%d", &N);
-
-    //Allocazione
-    a = (float *)calloc(N, sizeof(float));
-    b = (float *)calloc(N, sizeof(float));
-    c = (float *)calloc(N, sizeof(float));
-
-    //Valore vettori A e B
-    for(i = 0; i< N; i++)
-    {
-        a[i] = rand() %100 + 1;
+    for(int i=0; i<N; i++) {
+        a[i] = i;
+        b[i] = i + 1;
     }
 
+    printf("\nArray A:\n");
+    visualizzaArray(a,N);
+    printf("\n");
+    printf("\nArray B:\n");
+    visualizzaArray(b,N);
+    printf("\n");
 
-    for(i = 0; i< N; i++)
+    #pragma omp parallel shared (a,b,c)
     {
-        b[i] = rand() %100 + 1;
-    }
+        int indice;
+        int t = omp_get_num_threads();
+        int N_Loc = N/t;
+        printf("\nCore:%d\n",omp_get_thread_num());
 
-    //Stampa dei vettori
-    stampaVettore(a, N, "Vettore A:");
-    stampaVettore(b, N, "Vettore B:");
-
-
-    //Questo si può fare così solo se il size è divisibile per il numero di thread (I thread della mia CPU sono 6)
-#pragma omp parallel private (N_Loc, i, indice) shared (a, b, c)
-    {
-        t = omp_get_num_threads();
-
-        N_Loc = N/t;
-
-        printf("Sono %d, di %d: numeri %d\n", omp_get_thread_num(), t, N_Loc);
-
-        for(i=0; i < N_Loc; i++)
-        {
+        for(int i=0;i<N_Loc;i++) {
             indice = i + N_Loc * omp_get_thread_num();
-
             c[indice] = a[indice] + b[indice];
         }
     }
 
-    stampaVettore( c, N, "Vettore C:" );
-
-    printf("\n");
+    printf("\nArray c:\n");
+    visualizzaArray(c,N);
 
     free(a);
     free(b);
     free(c);
-
+    
     return 0;
-
-
-}
-
-
-
-//Funzione per la stampa del vettore
-void stampaVettore( float* a, int N, char name[] ) {
-
-    printf( "\n%s:\n", name );
-
-    for ( int i = 0; i < N; i++ )
-    {
-        printf( "%f ", a[i] );
-        printf( "\n" );
-    }
 }
