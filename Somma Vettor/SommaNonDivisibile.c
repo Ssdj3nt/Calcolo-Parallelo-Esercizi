@@ -38,7 +38,7 @@ int main() {
         int step;
         int indice;
 
-        int r= N % t; //Calcolo resto della divisione
+        int r = N % t; //Calcolo resto della divisione
 
         if(id < r) //Se il core ha un identificativo minore del resto si deve occupare di calcolare un elemento in più del vettore soluzione C
         {
@@ -52,7 +52,6 @@ int main() {
         for(int i=0; i < N_Loc; i++)
         {
             indice = i + N_Loc * omp_get_thread_num() + step;
-
             c[indice] = a[indice] + b[indice];
         }
     }
