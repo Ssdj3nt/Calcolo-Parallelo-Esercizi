@@ -3,65 +3,62 @@
 #include <time.h>
 #include <omp.h>
 
-//Somma N numeri Seconda strategia
-//Uso del reduction
+void printVector(int *a, int n);
+void insertElem(int *a, int n);
 
-void printArray(int * array, int size);
+int main(void) {
+    int N, t, N_Loc, rest, id, step;
+    unsigned long sum = 0;
 
-int main() {
     srand(time(NULL));
 
-    size_t i;
-    int nloc, remainder, step, id, n_threads;
-    unsigned long sum = 0;
-    int * a;
-    int size;
+    printf("Definisci il size del vettore N:");
+    scanf("%d",&N);
 
-
-    printf("Inserire il size dell'array: ");
-    scanf("%d", &size);
-
-    a = calloc(size, sizeof(int));
-    //FILL del vettore A
-    for (size_t i = 0; i < size; ++i) {
-        a[i] = rand() % 100 + 1;
+    int *a = calloc(N,sizeof(int));
+    if(a == NULL) {
+        printf("Errore allocazione memoria.");
+        exit(1);
     }
-    
-    puts("a:");
-    printArray(a, size);
-    putchar('\n');
 
-    
-    
-    #pragma omp parallel shared(a, n_threads, size) private(i, nloc, remainder, step, id) reduction(+:sum)
+    insertElem(a,N);
+    printVector(a,N);
+
+    #pragma omp parallel shared(a,N) private (N_Loc,rest,id,step) reduction(+:sum)
     {
+        t = omp_get_num_threads();
         id = omp_get_thread_num();
-        n_threads = omp_get_num_threads();
-        nloc = size / n_threads;
-        remainder = size % n_threads;
+        N_Loc = N/t;
+        rest = N%t;
 
-        if (id < remainder) {
-            nloc++;
+        if(id < rest) {
+            N_Loc++;
             step = 0;
-        } else {
-            step = remainder;
         }
+        else
+            step = rest;
 
-        for (i = 0; i < nloc; ++i) {
-            size_t index = i + id * nloc + step;
+        for(size_t i = 0; i < N_Loc; i++) {
+            size_t index = i + N_Loc * id + step;
             sum += a[index];
         }
+
     }
 
-    printf("Global sum: %lu\n", sum);
+    printf("Somma: %lu",sum);
 
     free(a);
-  
     return 0;
 }
 
-void printArray(int * array, int size) {
-    for (size_t i = 0; i < size; ++i) {
-        printf("%d ", array[i]);
+void printVector(int *a , int n) {
+    for(size_t i=0; i<n; i++) {
+        printf("%d:%d ",i,a[i]);
+    }
+    printf("\n");
+}
+void insertElem(int *a, int n) {
+    for(size_t i=0; i<n; i++) {
+        a[i] = rand() % 100;
     }
 }
