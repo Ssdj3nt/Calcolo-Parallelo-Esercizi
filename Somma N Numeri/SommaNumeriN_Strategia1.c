@@ -1,77 +1,61 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <omp.h>
 #include <time.h>
+#include <omp.h>
 
-//Somma N numeri di un vettore STRATEGIA 1
-//Faccio direttamente la versione con il resto
+void printVector(int *a, int n);
+void insertElem(int *a, int n);
 
-
-void  stampaVettore(float*, int, char[]);
-
-int main(){
-
-    int i, N, t, N_Loc, rest, id, step;
-    float *a, sum, sumtot;
-    sumtot = 0;
-
+int main(void) {
+    int N,sum,sumTot=0,t,N_Loc,rest,id,step;
     srand(time(NULL));
 
-    printf("Inserisci N:");
-    scanf("%d", &N);
-    printf("\n");
+    printf("Definisci il size del vettore N:");
+    scanf("%d",&N);
 
-    a = (float*) calloc(N, sizeof(float));
+    int *a = calloc(N,sizeof(int));
 
-    for (i = 0; i < N; i++)
-    {
-        a[i] = rand() % 100 + 1;
-    }
+    insertElem(a,N);
+    printVector(a,N);
 
-    stampaVettore(a, N, "Vettore A:");
-
-    //Comprende i casi in cui N non è divisibile per t
-    #pragma omp parallel private (sum, N_Loc, i, step, id) shared(sumtot, rest)
+    #pragma omp parallel private(sum,N_Loc,id,step) shared (sumTot,rest)
     {
         t = omp_get_num_threads();
         id = omp_get_thread_num();
         N_Loc = N/t;
         rest = N%t;
 
-        if (id < rest)
-        {
+        if(id < rest) {
             N_Loc++;
             step = 0;
-        } else {
-            step = rest;
         }
+        else
+            step = rest;
 
-        printf( "sono %d, di %d: numeri %d\n", omp_get_thread_num(), t, N_Loc );
-        
         sum = 0;
 
-        for(i = 0; i < N_Loc; i++)
-        {
-            sum = sum + a[i + N_Loc * omp_get_thread_num() + step];
+        for(int i=0;i<N_Loc;i++) {
+            sum += a[i + N_Loc * id + step];
         }
 
-        sumtot += sum;
+        sumTot += sum;
 
-    } //Fine direttiva
+    }
 
-    printf("\nSomma totale: %f\n", sumtot);
+    printf("Somma: %d",sumTot);
 
+    free(a);
+    return 0;
 }
 
-
-//Funzione per la stampa del vettore
-void stampaVettore( float* a, int N, char name[] ) {
-
-    printf( "\n%s:\n", name );
-
-    for ( int i = 0; i < N; i++ )
-    {        
-        printf( "%f ", a[i] );
-        printf( "\n" );
+void printVector(int *a , int n) {
+    for(int i=0; i<n; i++) {
+        printf("%d:%d ",i,a[i]);
+    }
+    printf("\n");
+}
+void insertElem(int *a, int n) {
+    for(int i=0; i<n; i++) {
+        a[i] = rand() % 100;
     }
 }
