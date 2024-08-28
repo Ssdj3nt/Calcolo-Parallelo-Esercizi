@@ -3,76 +3,75 @@
 #include <omp.h>
 #include <time.h>
 
-
-//Prodotto matrice per scalare usando la prima strategia
-//Non farò le altre wallahi 
-//Se decidi di mettere i, j, e matrice all'inizio di tutto per qualche motivo non va il programma oltre lo scanf delle colonne.
-
-void stampaMatrice(int ** matrix, int row, int col);
-
-int main(){
+void visualizzaMatrice(int **matrix, int n, int m) {
+    printf("\nMatrice:\n");
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            printf("%d ",matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+void fillMatrix(int **matrix, int n, int m) {
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < m; j++) {
+            matrix[i][j] = 1;
+        }
+}
+void fillMatrixRandom(int **matrix, int n, int m) {
     srand(time(NULL));
-    int righe, colonne;
-
-    printf("inserisci numero righe:");
-    scanf("%d",&righe);
-
-    printf("inserisci numero colonne: ");
-    scanf("%d", &colonne);
-
-    int ** matrice = malloc( righe * sizeof(int*));
-
-    for (size_t i = 0; i< righe; ++i)
-    {
-        matrice[i] = malloc(colonne * sizeof(int));
-    }
-
-    //Allocamento matrice
-    for (size_t i = 0; i < righe; ++i) {
-        for (size_t j = 0; j < colonne; ++j) {
-
-            matrice[i][j] = rand() % 20;
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            matrix[i][j] = rand() % 100 + 1;
         }
     }
-    int scalare;
-
-    printf("inserisci scalare:");
-    scanf("%d", &scalare);
-
-    printf("Prima Matrice:");
-    stampaMatrice(matrice, righe, colonne);
-
-
-    size_t i, j;
-
-    #pragma omp parallel for shared(righe, colonne, matrice, scalare) private(i, j)
-    for (i = 0; i < righe; ++i)
-    {
-        for(j = 0; j < colonne; ++j)
-        {
-           matrice[i][j] = matrice[i][j] * scalare;
-        }
-    }
-    
-
-    printf("Matrice dopo:");
-    stampaMatrice(matrice, righe,colonne);
-
-    return 0;
-
-
-
 }
 
+int main(void) {
+    int n,m,scalar,choice;
 
+    printf("\nDefinisci il size delle righe della matrice:");
+    scanf("%d",&n);
+    printf("\nDefinisci il size delle colonne della matrice:");
+    scanf("%d",&m);
 
-
-
-void stampaMatrice(int ** matrix, int row, int col) {
-    for (size_t i = 0; i < row; ++i) {
-        for (size_t j = 0; j < col; ++j) {
-            printf("%d ", matrix[i][j]);
-        }
-        putchar('\n');
+    //Allocazione della matrice come array di puntatori
+    int **matrix = calloc(n,sizeof (int *));
+    for(int i = 0; i < n; i++) {
+        matrix[i] = (int*)calloc(m,sizeof(int));
     }
+
+    printf("\nDefinisci lo scalare:");
+    scanf("%d",&scalar);
+
+    printf("\n[1] Riempi la matrice con tutti 1.");
+    printf("\n[2] Riempi la matrice in modo pseudo-casuale.");
+    printf("\nScelta:");
+
+    scanf("%d",&choice);
+    if(choice==1) {
+        fillMatrix(matrix,n,m);
+    }
+    else
+        fillMatrixRandom(matrix,n,m);
+
+    printf("\nInput");
+    visualizzaMatrice(matrix,n,m);
+
+#pragma omp parallel for shared(matrix,n,m,scalar)
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+            matrix[i][j] = matrix[i][j] * scalar;
+        }
+    }
+
+    printf("\nOutput");
+    visualizzaMatrice(matrix,n,m);
+
+    for(int i = 0; i < n; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+    return 0;
+
 }
