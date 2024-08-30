@@ -61,7 +61,7 @@ int main(void) {
     printVector(Vector, m);
    
     // Calcolo del prodotto matrice-vettore in parallelo
-    #pragma omp parallel for shared(Matrix, Vector)
+    #pragma omp parallel for shared(Matrix, Vector, Result)
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             Result[i] += Matrix[i][j] * Vector[j];
