@@ -49,7 +49,7 @@ int main(void) {
    
     // Alloco i vettori
     int *Vector = calloc(m, sizeof(int));
-    int *Result = calloc(n, sizeof(int)); // Corretto, ora ha dimensione n
+    int *Result = calloc(n, sizeof(int));
    
     fillMatrix(Matrix, n, m);
     fillVector(Vector, m);
@@ -60,7 +60,6 @@ int main(void) {
     printf("\nVettore:\n");
     printVector(Vector, m);
    
-    // Calcolo del prodotto matrice-vettore in parallelo
     #pragma omp parallel for shared(Matrix, Vector, Result)
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
